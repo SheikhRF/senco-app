@@ -21,7 +21,7 @@ export default function LoginPage() {
     if (error) {
       setError(error.message)
     } else {
-      router.push('/dashboard') // Replace with your protected page
+      router.push('/pupils') // Replace with your protected page
     }
   }
 
