@@ -5,20 +5,32 @@ export async function middleware(req: NextRequest) {
   const res = NextResponse.next()
   const supabase = createMiddlewareClient({ req, res })
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
+  let session = null
 
-  const protectedPaths = ['/pupils', '/dashboard']
-  const isProtected = protectedPaths.some((path) => req.nextUrl.pathname.startsWith(path))
+  try {
+    const {
+      data: { session: fetchedSession },
+    } = await supabase.auth.getSession()
+    session = fetchedSession
+  } catch (err) {
+    console.error('⚠️ Error fetching Supabase session:', err)
+    // Proceed as if not authenticated
+  }
+
+  const protectedPaths = ['/', '/dashboard']
+  const isProtected = protectedPaths.some((path) =>
+    req.nextUrl.pathname === path || req.nextUrl.pathname.startsWith(`${path}/`)
+  )
 
   if (isProtected && !session) {
-    return NextResponse.redirect(new URL('/login', req.url))
+    const redirectUrl = req.nextUrl.clone()
+    redirectUrl.pathname = '/login'
+    return NextResponse.redirect(redirectUrl)
   }
 
   return res
 }
 
 export const config = {
-  matcher: ['/pupils/:path*', '/dashboard/:path*'],
+  matcher: ['/pupils', '/pupils/:path*', '/dashboard', '/dashboard/:path*'],
 }

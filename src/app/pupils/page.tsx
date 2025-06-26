@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import Link from 'next/link'
 
 type Pupil = {
   Pupil_ID: string
@@ -16,24 +17,21 @@ export default function PupilsPage() {
   const [pupils, setPupils] = useState<Pupil[]>([])
   const [loading, setLoading] = useState(true)
 
-
   useEffect(() => {
-  const fetchPupils = async () => {
-    const { data, error } = await supabase.from('Pupil').select('*')
-    console.log('DATA:', data)
-    console.log('ERROR:', error)
+    const fetchPupils = async () => {
+      const { data, error } = await supabase.from('Pupil').select('*')
 
-    if (error) {
-      console.error('Supabase error:', error)
-    } else {
-      setPupils(data || [])
+      if (error) {
+        console.error('Supabase error:', error)
+      } else {
+        setPupils(data || [])
+      }
+
+      setLoading(false)
     }
 
-    setLoading(false)
-  }
-
-  fetchPupils()
-}, [])
+    fetchPupils()
+  }, [])
 
   return (
     <div className="p-6">
@@ -44,12 +42,14 @@ export default function PupilsPage() {
               <Skeleton key={i} className="h-24 w-full rounded-lg" />
             ))
           : pupils.map((pupil) => (
-              <Card key={pupil.Pupil_ID} className="shadow-md">
-                <CardContent className="p-4">
-                  <p className="font-bold">{pupil.forename} {pupil.surname}</p>
-                  <p className="text-sm text-muted-foreground">{pupil.email}</p>
-                </CardContent>
-              </Card>
+              <Link key={pupil.Pupil_ID} href={`/pupils/${pupil.Pupil_ID}`}>
+                <Card className="shadow-md hover:shadow-lg transition-shadow cursor-pointer">
+                  <CardContent className="p-4">
+                    <p className="font-bold">{pupil.forename} {pupil.surname}</p>
+                    <p className="text-sm text-muted-foreground">{pupil.email}</p>
+                  </CardContent>
+                </Card>
+              </Link>
             ))}
       </div>
     </div>
